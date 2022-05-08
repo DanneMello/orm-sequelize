@@ -1,0 +1,30 @@
+{
+  "name": "orm-sequelize",
+  "version": "1.0.0",
+  "description": "Projeto que tem por finalidade por em prática as operações no banco com o orm sequelize",
+  "main": "./api/index.js",
+  "scripts": {
+    "dev": "nodemon ./api/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanneMello/orm-sequelize.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DanneMello/orm-sequelize/issues"
+  },
+  "homepage": "https://github.com/DanneMello/orm-sequelize#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mysql2": "^2.1.0",
+    "nodemon": "^2.0.3",
+    "path": "^0.12.7",
+    "sequelize": "^5.21.7",
+    "sequelize-cli": "^5.5.1"
+  }
+}
