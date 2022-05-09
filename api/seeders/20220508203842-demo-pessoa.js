@@ -37,7 +37,7 @@ module.exports = {
 				nome: 'Paula Morais',
 				ativo: true,
 				email: 'paula@paula.com',
-				role: 'docente',
+				role: 'docente_id',
 				createdAt: new Date(),
 				updatedAt: new Date()
 			},
@@ -45,7 +45,7 @@ module.exports = {
 				nome: 'Sergio Lopes',
 				ativo: true,
 				email: 'sergio@sergio.com',
-				role: 'docente',
+				role: 'docente_id',
 				createdAt: new Date(),
 				updatedAt: new Date()
 			}
