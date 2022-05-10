@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         ativo: DataTypes.BOOLEAN,
         email: DataTypes.STRING,
         role: DataTypes.STRING
-    }, {});
+    }, { paranoid: true });
 
     // Relacionamentos entre tabelas
     Pessoas.associate = function (models) {
