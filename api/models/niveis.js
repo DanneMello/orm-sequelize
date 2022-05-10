@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Niveis = sequelize.define('Niveis', {
         desc_nivel: DataTypes.STRING
-    }, {});
+    }, { paranoid: true });
 
     // Relacionamentos entre tabelas
     Niveis.associate = function (models) {

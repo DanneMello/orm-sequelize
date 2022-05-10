@@ -92,6 +92,38 @@ class NivelController {
             return res.status(500).json({ message: `Erro ao tentar apagar o registro - ${error.message}` });
         }
     }
+
+    /**
+     * Restaura um nível
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async restaurarNivel(req, res) {
+        const { id } = req.params;
+
+        try {
+            await database.Niveis.restore({
+                where: {
+                id: Number(id)
+                }
+            });
+
+            const nivelRestaurado = await database.Niveis.findOne({
+                where: {
+                    id: Number(id)
+                }
+            });
+
+            return res.status(201).json(nivelRestaurado ? {
+                message: `Nível restaurado`,
+                nivel: nivelRestaurado
+            } : `Nenhum registro encontrado`);
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar recuperar o registro = ${error.message}`);
+        }
+    }
 }
 
 // Exporta o modelo atual para ser utilizado no restante do código

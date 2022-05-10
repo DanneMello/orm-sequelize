@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Matriculas = sequelize.define('Matriculas', {
         status: DataTypes.STRING
-    }, {});
+    }, { paranoid: true });
 
     // Relacionamentos entre tabelas
     Matriculas.associate = function (models) {

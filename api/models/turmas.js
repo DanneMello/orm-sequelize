@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
     const Turmas = sequelize.define('Turmas', {
         data_inicio: DataTypes.DATEONLY
-    }, {});
+    }, { paranoid: true });
 
     // Relacionamentos entre tabelas
     Turmas.associate = function (models) {

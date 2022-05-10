@@ -91,6 +91,38 @@ class TurmaController {
             return res.status(500).json({ message: `Erro ao tentar apagar o registro - ${error.message}` });
         }
     }
+
+    /**
+     * Restaura uma turma
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async restaurarTurma(req, res) {
+        const { id } = req.params;
+
+        try {
+            await database.Turmas.restore({
+                where: {
+                id: Number(id)
+                }
+            });
+
+            const turmaRestaurada = await database.Turmas.findOne({
+                where: {
+                    id: Number(id)
+                }
+            });
+
+            return res.status(201).json(turmaRestaurada ? {
+                message: `Turma restaurada`,
+                turma: turmaRestaurada
+            } : `Nenhum registro encontrado`);
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar recuperar o registro = ${error.message}`);
+        }
+    }
 }
 
 // Exporta o modelo atual para ser utilizado no restante do código

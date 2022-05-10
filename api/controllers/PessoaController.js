@@ -105,6 +105,38 @@ class PessoaController {
     }
 
     /**
+     * Restaura um registro
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async restaurarPessoa(req, res) {
+        const { id } = req.params;
+
+        try {
+            await database.Pessoas.restore({
+                where: {
+                    id: Number(id) 
+                } 
+            });
+
+            const pessoaRestaurada = await database.Pessoas.findOne({
+                where: {
+                    id: Number(id)
+                }
+            });
+
+            return res.status(201).json(pessoaRestaurada ? {
+                message: `Registro restaurado`,
+                pessoa: pessoaRestaurada
+            } : `Nenhum registro encontrado`);
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar recuperar o registro = ${error.message}`);
+        }
+    }
+
+    /**
      * Busca uma mátricula
      * 
      * @param Request req 
@@ -199,6 +231,39 @@ class PessoaController {
             return res.status(201).json({ message: `Registro deletado com sucesso!` });
         } catch (error) {
             return res.status(500).send(`Erro ao tentar deletar o registro = ${error.message}`);
+        }
+    }
+
+    /**
+     * Restaura uma mátricula
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async restaurarMatricula(req, res) {
+        const { estudanteId, matriculaId } = req.params;
+        try {
+            await database.Matriculas.restore({
+                where: {
+                id: Number(matriculaId),
+                estudante_id: Number(estudanteId)
+                }
+            });
+
+            const matriculaRestaurada = await database.Matriculas.findOne({
+                where: {
+                    id: Number(matriculaId)
+                }
+            });
+
+            return res.status(201).json(matriculaRestaurada ? {
+                message: `Matrícula  restaurada`,
+                matricula: matriculaRestaurada
+            } : `Nenhum registro encontrado`);
+
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar recuperar o registro = ${error.message}`);
         }
     }
 }
