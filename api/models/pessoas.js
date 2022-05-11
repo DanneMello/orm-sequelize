@@ -1,11 +1,42 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
     const Pessoas = sequelize.define('Pessoas', {
-        nome: DataTypes.STRING,
+        nome: {
+            type: DataTypes.STRING,
+            validate: {
+                function (dado) {
+                    if ( dado.length < 3) {
+                        throw new Error('O nome deve conter mais do que 2 caracteres');
+                    } else if (dado.length > 100) {
+                        throw new Error('O nome deve conter menos de 5 caracteres')
+                    }
+                }
+            }
+        },
         ativo: DataTypes.BOOLEAN,
-        email: DataTypes.STRING,
+        email: {
+            type: DataTypes.STRING,
+            validate: {
+                isEmail: {
+                    args: true,
+                    msg: 'Favor informar um e-mail válido'
+                }
+            }
+        },
         role: DataTypes.STRING
-    }, { paranoid: true });
+    }, { 
+        paranoid: true,
+        defaultScope: {
+            where: {
+                ativo: true
+            }
+        },
+        scopes: {
+            todos: {
+                where: {}
+            }
+        }
+    });
 
     // Relacionamentos entre tabelas
     Pessoas.associate = function (models) {
