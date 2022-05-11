@@ -11,8 +11,32 @@ class PessoaController {
      */
     static async listarPessoas(req, res) {
         try {
+            const pessoas = await database.Pessoas.scope('todos').findAll();
+
+            return res.status(200).json(pessoas ? {
+                total: pessoas.length,
+                pessoas: pessoas
+            } : `Nenhum registro encontrado`);
+        } catch (error) {
+            return res.status(500).json(`Erro ao tentar buscar as pessoas - ${error.message}`);
+        }
+    }
+
+    /**
+     * Retorna todas as pessoas ativas
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async listarPessoasAtivas(req, res) {
+        try {
             const pessoas = await database.Pessoas.findAll();
-            return res.status(200).json(pessoas || "Nenhuma pessoa foi encontrada");
+
+            return res.status(200).json(pessoas ? {
+                total: pessoas.length,
+                pessoas: pessoas
+            } : `Nenhum registro encontrado`);
         } catch (error) {
             return res.status(500).json(`Erro ao tentar buscar as pessoas - ${error.message}`);
         }
@@ -97,8 +121,25 @@ class PessoaController {
         const { id } = req.params;
 
         try {
+
+            // Verifica se existe alguém com o id informado
+            const pessoa = await database.Pessoas.findOne({
+                where: {
+                    id: Number(id)
+                }
+            });
+
+            if (!pessoa) {
+                return res.status(404).json({ message: `Nenhum registro encontrado com o id informado` });
+            }
+
+            // Faz a exclusão
             await database.Pessoas.destroy({ where: { id: Number(id) } });
-            return res.status(201).json({ message: `Registro deletado com sucesso!` });
+            
+            return res.status(200).json({ 
+                message: `${pessoa.nome} foi deletado com sucesso!`,
+            });
+
         } catch (error) {
             return res.status(500).send(`Erro ao tentar deletar o registro = ${error.message}`);
         }
