@@ -6,7 +6,10 @@ const router = Router();
 // Rotas para pessoas
 router.get('/pessoas', PessoaController.listarPessoasAtivas);
 router.get('/pessoas/todas', PessoaController.listarPessoas);
+router.get('/pessoas/:estudanteId/matriculas', PessoaController.obterMatriculasPorEstudante);
 router.get('/pessoas/:id', PessoaController.listarPessoaPorId);
+router.get('/pessoas/matricula/:turmaId/confirmadas', PessoaController.obterMatriculaPorTurma);
+router.get('/pessoas/matricula/lotada', PessoaController.retornarTurmasLotadas);
 router.post('/pessoas', PessoaController.criarPessoa);
 router.put('/pessoas/:id', PessoaController.atualizarPessoa);
 router.delete('/pessoas/:id', PessoaController.deletarPessoa);

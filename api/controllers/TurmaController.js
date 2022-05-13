@@ -1,18 +1,41 @@
 const database = require('../models/index.js');
+const Sequelize = require('sequelize');
+const { where } = require('sequelize');
+const Op = Sequelize.Op;
 
 class TurmaController {
 
     /**
-     * Lista todos os registros
+     * Lista todos os registros 
+     * Caso for informado data_inicial, 
+     * data_final ou ambos; aplica o filtro.
      * 
      * @param Request req 
      * @param Response res 
      * @returns 
      */
     static async listarTurmas(req, res) {
+        const { data_inicial, data_final } = req.query;
+
+        const search = {};
+
+        // Se existir parâmtro de data abre um objeto no atributo data_inicio
+        data_inicial || data_final ? search.data_inicio = {} : null;
+
+        // Se data inicial, busca registros com data_inicio a partir da data informada
+        data_inicial ? search.data_inicio[Op.gte] = data_inicial : null;
+
+        // Se data_final, busca registros com data_inicio até a data informada
+        data_final ? search.data_inicio[Op.lte] = data_final : null;
+
         try {
-            const todasAsTurmas = await database.Turmas.findAll();
-            return res.status(200).json(todasAsTurmas || "Nenhuma turma foi encontrada");
+            const turmas = await database.Turmas.findAll({ where: search });
+
+            return res.status(200).json(turmas ? {
+                total: turmas.length,
+                turmas: turmas
+            } : `Nenhuma turma foi encontrada`);
+
         } catch (error) {
             return res.status(500).json({ message: `Erro ao tentar listar os registros - ${error.message}` });
         }
