@@ -1,4 +1,6 @@
 const database = require('../models/index.js');
+const Sequelize = require('sequelize');
+
 
 class PessoaController {
 
@@ -305,6 +307,97 @@ class PessoaController {
 
         } catch (error) {
             return res.status(500).send(`Erro ao tentar recuperar o registro = ${error.message}`);
+        }
+    }
+
+    /**
+     * Obtém as mátriculas de um estudante
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async obterMatriculasPorEstudante(req, res) {
+        const { estudanteId } = req.params;
+
+        try {
+            const pessoa = await database.Pessoas.findOne({
+                where: {
+                    id: Number(estudanteId)
+                }
+            });
+
+            const matriculas = await pessoa.getAulasMatriculadas();
+
+            return res.status(200).json(matriculas ? {
+                totalMatriculas: matriculas.length,
+                matriculas: matriculas
+            } : `Nenhum registro encontrado`);
+            
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar recuperar as mátriculas - ${error.message}`);
+        }
+    }
+
+    /**
+     * Busca as mátriculas por turma também informa
+     * o total de mátriculas exitentes
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async obterMatriculaPorTurma(req, res) {
+        const { turmaId } = req.params;
+
+        try {
+            const totalMatriculas = await database.Matriculas.findAndCountAll(
+                {
+                    where: {
+                        turma_id: Number(turmaId),
+                        status: 'confirmado'
+                    },
+                    limit: 5,
+                    order: [[
+                        'estudante_id', 'DESC'
+                    ]]
+                }
+            );
+
+            return res.status(200).json(totalMatriculas ? {
+                totalMatriculas: totalMatriculas
+            } : `Nenhum registro encontrado`);
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
+        }
+    }
+
+    /**
+     * Retorna as turmas que excederam sua capacidade
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async retornarTurmasLotadas(req, res) {
+        
+        const limitePorTurma = 2;
+
+        try {
+            const turmasLotadas = await database.Matriculas.findAndCountAll({
+                where: {
+                    status: 'confirmado'
+                },
+                attributes: ['turma_id'],
+                group: ['turma_id'],
+                having: Sequelize.literal(`count(turma_id) >= ${limitePorTurma}`)
+            });
+
+            return res.status(200).json(turmasLotadas ? {
+                turmasLotadas: turmasLotadas.count
+            } : `Nenhum registro encontrado`);
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
         }
     }
 }
