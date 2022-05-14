@@ -98,9 +98,9 @@ class PessoaController {
         const novasInfo = req.body;
 
         try {
-            await database.Pessoas.update(novasInfo, { where: { id: Number(id) } });
+            await database.Pessoas.scope('todos').update(novasInfo, { where: { id: Number(id) } });
 
-            const pessoaAtualizada = await database.Pessoas.findOne({
+            const pessoaAtualizada = await database.Pessoas.scope('todos').findOne({
                 where: {
                     id: Number(id)
                 }
@@ -321,7 +321,7 @@ class PessoaController {
         const { estudanteId } = req.params;
 
         try {
-            const pessoa = await database.Pessoas.findOne({
+            const pessoa = await database.Pessoas.scope('todos').findOne({
                 where: {
                     id: Number(estudanteId)
                 }
@@ -381,7 +381,7 @@ class PessoaController {
      */
     static async retornarTurmasLotadas(req, res) {
         
-        const limitePorTurma = 2;
+        const limitePorTurma = 5;
 
         try {
             const turmasLotadas = await database.Matriculas.findAndCountAll({
@@ -397,6 +397,137 @@ class PessoaController {
                 turmasLotadas: turmasLotadas.count
             } : `Nenhum registro encontrado`);
         } catch (error) {
+            return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
+        }
+    }
+
+    /**
+     * Cancela um estudante e suas mátriculas 
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async cancelarEstudante(req, res) {
+        const { estudanteId } = req.params;
+
+        try {
+            // Busca a pessoa 
+            const pessoa = await database.Pessoas.findOne({
+                where: {
+                    id: Number(estudanteId)
+                }
+            });
+
+            // Verifica se existe alguém com o id informado
+            if (!pessoa) {
+                return res.status(404).json({ message: `Nenhum registro encontrado com o id informado` });
+            }
+            
+            // Cancela o estudante
+            await database.Pessoas.update(
+                {
+                    ativo: false
+                },
+                {
+                    where: {
+                        id: Number(estudanteId)
+                    }
+                }
+            );
+
+            // Cancela a mátricula
+            await database.Matriculas.update(
+                {
+                    status: 'cancelado'
+                },
+                {
+                    where: {
+                        estudante_id: Number(estudanteId)
+                    }
+                }
+            );
+
+            return res.status(200).json({message: `Mátriculas do estudante ${pessoa.nome} foi cancelada com sucesso!`});
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
+        }
+    }
+
+    /**
+     * Ativa um estudante e suas mátriculas.
+     * Caso vier id da turma, realiza a mátricula apenas nela.
+     * Se não mandar id da turma, reativa todas as mátriculas
+     * 
+     * @param Request req 
+     * @param Response res 
+     * @returns 
+     */
+    static async ativarMatriculasPorEstudante(req, res) {
+        const { estudanteId, turmaId } = req.params;
+
+        try {
+            // Busca a pessoa 
+            const pessoa = await database.Pessoas.scope('todos').findOne({
+                where: {
+                    id: Number(estudanteId)
+                }
+            });
+
+            // Verifica se existe alguém com o id informado
+            if (!pessoa) {
+                return res.status(404).json({ message: `Nenhum registro encontrado com o id informado` });
+            }
+
+            // Verifica se o status está inativo
+            if (!pessoa.ativo) {
+                return res.status(401).json({ message: `Impossível reativar as matrículas de ${pessoa.nome}, esta pessoa encontra-se inativa no momento` });
+            }
+
+            if (turmaId) {
+
+                // Busca a matricula 
+                const matricula = await database.Matriculas.findOne({
+                    where: {
+                        estudante_id: Number(estudanteId),
+                        turma_id: Number(turmaId)
+                    }
+                });
+
+                // Verifica se existe alguém com o id informado
+                if (!matricula) {
+                    return res.status(404).json({ message: `Nenhuma matrícula encontrada` });
+                }
+
+                // Reativa a mátricula
+                await database.Matriculas.update(
+                    {
+                        status: 'reativado'
+                    },
+                    {
+                        where: {
+                            estudante_id: Number(estudanteId),
+                            turma_id: Number(turmaId)
+                        }
+                    }
+                );
+            } else {
+                // Cancela a mátricula
+                await database.Matriculas.update(
+                    {
+                        status: 'reativado'
+                    },
+                    {
+                        where: {
+                            estudante_id: Number(estudanteId)
+                        }
+                    }
+                );
+            }
+
+            return res.status(200).json({message: `Mátriculas do estudante ${pessoa.nome} foi reativada com sucesso!`});
+        } catch (error) {
+
             return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
         }
     }
