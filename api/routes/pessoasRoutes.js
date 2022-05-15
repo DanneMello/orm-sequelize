@@ -4,8 +4,8 @@ const PessoaController = require('../controllers/PessoaController.js');
 const router = Router();
 
 // Rotas para pessoas
-router.get('/pessoas', PessoaController.listarPessoasAtivas);
-router.get('/pessoas/todas', PessoaController.listarPessoas);
+router.get('/pessoas/ativas', PessoaController.listarPessoasAtivas);
+router.get('/pessoas/todas', PessoaController.listarTodasPessoas);
 router.get('/pessoas/:estudanteId/matriculas', PessoaController.obterMatriculasPorEstudante);
 router.get('/pessoas/:id', PessoaController.listarPessoaPorId);
 router.get('/pessoas/matricula/:turmaId/confirmadas', PessoaController.obterMatriculaPorTurma);
@@ -18,6 +18,7 @@ router.put('/pessoas/:id', PessoaController.atualizarPessoa);
 router.delete('/pessoas/:id', PessoaController.deletarPessoa);
 
 // Rotas para matrículas
+router.get('/matriculas', PessoaController.listarMatriculas);
 router.get('/pessoas/:estudanteId/matricula/:matriculaId/', PessoaController.obterMatricula);
 router.post('/pessoas/:estudanteId/matricula', PessoaController.matricular);
 router.put('/pessoas/:estudanteId/matricula/:matriculaId/', PessoaController.atualizarMatricula);
