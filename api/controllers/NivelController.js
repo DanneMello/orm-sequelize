@@ -1,18 +1,22 @@
 const database = require('../models/index.js');
 
+const Services = require('../services/Services.js');
+const nivelService = new Services('Niveis');
+
 class NivelController {
 
     /**
      * Lista todos os registros
      * 
-     * @param Request req 
      * @param Response res 
      * @returns 
      */
-    static async listarNiveis(req, res) {
+    static async listarNiveis(_, res) {
         try {
-            const todosOsNiveis = await database.Niveis.findAll();
-            return res.status(200).json(todosOsNiveis || "Nenhum registro encontrado");
+            const niveis = await nivelService.listar();
+            return res.status(200).json(niveis ? {
+                niveis: niveis
+            } : `Nenhum registro encontrado`);
         } catch (error) {
             return res.status(500).json({ message: `Erro ao tentar listar os registros - ${error.message}` });
         }
@@ -26,14 +30,11 @@ class NivelController {
      * @returns 
      */
     static async listarNiveisPorId(req, res) {
-        const { id } = req.params;
         try {
-            const nivel = await database.Niveis.findOne({
-                where: {
-                    id: Number(id)
-                }
-            })
-            return res.status(200).json(nivel || "Nenhum registro encontrado");
+            const nivel = await nivelService.listar(req.params.id);
+            return res.status(200).json(nivel ? {
+                nivel: nivel
+            } : `Nenhum registro encontrado`);
         } catch (error) {
             return res.status(500).json({ message: `Erro ao tentar listar o registro - ${error.message}` });
         }

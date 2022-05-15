@@ -1,19 +1,20 @@
-const database = require('../models/index.js');
-const Sequelize = require('sequelize');
+// const database = require('../models/index.js');
+// const Sequelize = require('sequelize');
 
+const {PessoasServices} = require('../services/index.js');
+const pessoasServices = new PessoasServices();
 
 class PessoaController {
 
     /**
      * Retorna todas as pessoas
      * 
-     * @param Request req 
-     * @param Response res 
+     * @param {Response} res 
      * @returns 
      */
-    static async listarPessoas(req, res) {
+    static async listarTodasPessoas(_, res) {
         try {
-            const pessoas = await database.Pessoas.scope('todos').findAll();
+            const pessoas = await pessoasServices.listarTodos();
 
             return res.status(200).json(pessoas ? {
                 total: pessoas.length,
@@ -31,9 +32,9 @@ class PessoaController {
      * @param Response res 
      * @returns 
      */
-    static async listarPessoasAtivas(req, res) {
+    static async listarPessoasAtivas(_, res) {
         try {
-            const pessoas = await database.Pessoas.findAll();
+            const pessoas = await pessoasServices.listarRegistrosAtivos();
 
             return res.status(200).json(pessoas ? {
                 total: pessoas.length,
@@ -52,15 +53,8 @@ class PessoaController {
      * @returns 
      */
     static async listarPessoaPorId(req, res) {
-        const { id } = req.params;
-
         try {
-            const pessoa = await database.Pessoas.findOne({
-                where: {
-                    id: Number(id)
-                }
-            });
-
+            const pessoa = await pessoasServices.listar(req.params.id);
             return res.status(200).json(pessoa || "Nenhuma pessoa foi encontrada");
         } catch (error) {
             return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
@@ -95,17 +89,11 @@ class PessoaController {
      */
     static async atualizarPessoa(req, res) {
         const { id } = req.params;
-        const novasInfo = req.body;
+        const dados = req.body;
 
         try {
-            await database.Pessoas.scope('todos').update(novasInfo, { where: { id: Number(id) } });
-
-            const pessoaAtualizada = await database.Pessoas.scope('todos').findOne({
-                where: {
-                    id: Number(id)
-                }
-            });
-
+            await pessoasServices.atualizar(dados, Number(id));
+            const pessoaAtualizada = await pessoasServices.listar(id);
             return res.status(201).json(pessoaAtualizada || "Nenhuma pessoa foi atualizada");
         } catch (error) {
             return res.status(500).send(`Erro ao tentar atualizar o registro = ${error.message}`);
@@ -198,6 +186,23 @@ class PessoaController {
             });
 
             return res.status(200).json(matricula || "Nenhuma mátricula encontrada.");
+        } catch (error) {
+            return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
+        }
+    }
+
+    /**
+     * Lista todas as mátriculas
+     * 
+     * @param {Response} res 
+     * @returns 
+     */
+    static async listarMatriculas(_, res) {
+        try {
+            const matriculas = await pessoasServices.listarMatriculas();
+            return res.status(200).json(matriculas ? {
+                matriculas: matriculas
+            } : `Nenhum registro encontrado`);
         } catch (error) {
             return res.status(500).send(`Erro ao tentar encontrar o registro = ${error.message}`);
         }
@@ -379,7 +384,7 @@ class PessoaController {
      * @param Response res 
      * @returns 
      */
-    static async retornarTurmasLotadas(req, res) {
+    static async retornarTurmasLotadas(_, res) {
         
         const limitePorTurma = 5;
 
@@ -412,41 +417,15 @@ class PessoaController {
         const { estudanteId } = req.params;
 
         try {
-            // Busca a pessoa 
-            const pessoa = await database.Pessoas.findOne({
-                where: {
-                    id: Number(estudanteId)
-                }
-            });
+            const pessoa = await pessoasServices.listar(estudanteId);
 
             // Verifica se existe alguém com o id informado
             if (!pessoa) {
                 return res.status(404).json({ message: `Nenhum registro encontrado com o id informado` });
             }
             
-            // Cancela o estudante
-            await database.Pessoas.update(
-                {
-                    ativo: false
-                },
-                {
-                    where: {
-                        id: Number(estudanteId)
-                    }
-                }
-            );
-
-            // Cancela a mátricula
-            await database.Matriculas.update(
-                {
-                    status: 'cancelado'
-                },
-                {
-                    where: {
-                        estudante_id: Number(estudanteId)
-                    }
-                }
-            );
+            // Cancela a pessoa
+            await pessoasServices.cancelarPessoa(Number(estudanteId));
 
             return res.status(200).json({message: `Mátriculas do estudante ${pessoa.nome} foi cancelada com sucesso!`});
         } catch (error) {

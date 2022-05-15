@@ -3,6 +3,9 @@ const Sequelize = require('sequelize');
 const { where } = require('sequelize');
 const Op = Sequelize.Op;
 
+const Services = require('../services/Services.js');
+const turmasService = new Services('Turmas');
+
 class TurmaController {
 
     /**
@@ -49,13 +52,8 @@ class TurmaController {
      * @returns 
      */
     static async listarTurmasPorId(req, res) {
-        const { id } = req.params;
         try {
-            const turma = await database.Turmas.findOne({
-                where: {
-                    id: Number(id)
-                }
-            })
+            const turma = await turmasService.listar(req.params.id);
             return res.status(200).json(turma || "Nenhum registro encontrado");
         } catch (error) {
             return res.status(500).json({ message: `Erro ao tentar listar o registro - ${error.message}` });
